@@ -1,0 +1,52 @@
+#include <stdio.h>
+
+// structure d'un contact
+struct contact {
+    char nom[50];
+    char numero[20];
+    char email[50];};
+
+// tableau de contacts et nombre de contacts
+struct Contact contacts[100];
+int nb_contavts = 0;
+
+// les couleurs
+const char *reset = "\033[0m";
+const char *vert = "\033[32m";
+const char *rouge = "\033[31m";
+const char *jaune = "\033[33m";
+
+void ajouter_contact() {
+    struct Contact nouveau_contact;
+
+    // Vérifier si le tableau est plein
+    if (nb_contacts >= 100) {
+        printf("Le carnet d adresses est plein.\n");
+        return;}
+
+    // Demander les informations à l'utilisateur
+    printf("entrer le nom : ");
+    fgets(nouveau_contact.nom, sizeof(nouveau_contact.nom), stdin);
+    // Supprimer le caractère de nouvelle ligne si présent
+    nouveau_contact.nom[strcspn(nouveau_contact.nom, "\n")] = '\0';
+      
+    // Vérification de la longueur de la chaîne saisie pour le nom
+    if (strlen(nouveau_contact.nom) >= sizeof(nouveau_contact.nom) - 1) {
+        printf("Le nom est trop long.\n");
+        // Gérer l'erreur : par exemple, demander à l'utilisateur de saisir à nouveau
+        return;
+    
+    printf("entrer le numero de telephone : ");
+    fgets(nouveau_contact.numero, sizeof(nouveau_contact.numero), stdin);
+    nouveau_contact.numero[strcspn(nouveau_contact.numero, "\n")] = '\0';
+
+    printf("entrer l adresse email : ");
+    fgets(nouveau_contact.email, sizeof(nouveau_contact.email), stdin);
+    nouveau_contact.email[strcspn(nouveau_contact.email, "\n")] = '\0';
+
+    // Ajouter le nouveau contact au tableau
+    contacts[nb_contacts] = nouveau_contact;
+    nb__contacts++;
+
+    printf("Contact ajoute avec succes !\n");
+}
