@@ -1,21 +1,43 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 // structure d'un contact
 struct contact {
     char nom[50];
     char numero[20];
-    char email[50];};
+    char email[50];
+    char id[8]};
 
 // tableau de contacts et nombre de contacts
 struct contact contacts[100];
 int nb_contacts = 0;
+char id_table[10000];
+int conteur_id = 0;
 
 // les couleurs
 {const char *reset = "\033[0m";
 const char *vert = "\033[32m";
 const char *rouge = "\033[31m";
 const char *jaune = "\033[33m";}
+
+// la fonction qui vérifier le nom 
+int nom_verifier(char *nom){
+
+        // Vérification de la longueur de la chaîne saisie pour le nom
+    if (strlen(*nom) >= sizeof(*nom) - 1) {
+        printf("Le nom est trop long.\n");
+        return 0;}
+    
+    // vérification que le nom contien des lettres
+    for (int i = 0; *nom[i] != '\0'; i++) {
+        if (!isalpha(*nom[i]) && *nom[i] != ' ') {
+            printf("le nom ne doit contenir que des lettres et des espaces.\n");
+            return 0;}
+            }
+        return 1;
+        }
 
 // la fonction qui vérifier le numero de telephone
 int numero_valide(const char *numero) {
@@ -36,6 +58,30 @@ int numero_valide(const char *numero) {
 
     return 1;}
 
+// la fonction qui generer des id
+char generer_id() {
+    char idi;
+    int i;
+    authre:
+    srand(time(NULL));
+
+    // Générer un nombre aléatoire entre 100000 et 999999
+    int num = rand() % 900000 + 100000;
+
+    // Générer id 
+    sprintf(idi, "YC%06d", num);
+
+     // virifier si id existe deja
+    for (i = 0; i <= conteur_id){
+        if (strcmp(id_table[conteur_id], idi) == 0){
+            goto authre;}}
+
+    // Ajouter id au tableau des id
+    strcpy(id_table[conteur_id],idi);
+    conteur_id++; 
+    return idi;  
+}
+
 //1.Ajouter un contact
 void ajouter_contact() {
     struct contact nouveau_contact;
@@ -45,40 +91,37 @@ void ajouter_contact() {
         printf("Le carnet d adresses est plein.\n");
         return;}
 
+    debutnom:
     // Demander les informations à l'utilisateur
     // Ajouter le nom
     {printf("entrer le nom : ");
     fgets(nouveau_contact.nom, sizeof(nouveau_contact.nom), stdin);
-    // Supprimer le caractère de nouvelle ligne si présent
     nouveau_contact.nom[strcspn(nouveau_contact.nom, "\n")] = '\0';}
       
-    {//vérification de nom
-        // Vérification de la longueur de la chaîne saisie pour le nom
-    if (strlen(nouveau_contact.nom) >= sizeof(nouveau_contact.nom) - 1) {
-        printf("Le nom est trop long.\n");
-        // Gérer l'erreur : par exemple, demander à l'utilisateur de saisir à nouveau
-        return;}
-    
-    // vérification que le nom contien des lettres
-    for (int i = 0; nouveau_contact.nom[i] != '\0'; i++) {
-        if (!isalpha(nouveau_contact.nom[i]) && nouveau_contact.nom[i] != ' ') {
-            printf("le nom ne doit contenir que des lettres et des espaces.\n");
-            return;}}}
-    
+    //vérification de nom
+    if (!nom_verifier(nouveau_contact.nom)){
+        goto debutnom;
+    }
+
+    debutnumero:
     //ajouter le numero de telephone
     {printf("entrer le numero de telephone : ");
     fgets(nouveau_contact.numero, sizeof(nouveau_contact.numero), stdin);
     nouveau_contact.numero[strcspn(nouveau_contact.numero, "\n")] = '\0';}
      
      //vérification de numero de telephone
-    if (numero_valide(nouveau_contact.numero)==0){
+    if (!numero_valide(nouveau_contact.numero)){
         printf("ce nomero n est pas validie");
-        return;}
+        goto debutnumero;
+    }
 
     // ajouter l adresse email
     {printf("entrer l adresse email : ");
     fgets(nouveau_contact.email, sizeof(nouveau_contact.email), stdin);
     nouveau_contact.email[strcspn(nouveau_contact.email, "\n")] = '\0';}
+
+    // Ajouter un id au nouveau contact
+    strcpy(nouveau_contact.id,generer_id)
 
     // Ajouter le nouveau contact au tableau
     {contacts[nb_contacts] = nouveau_contact;
@@ -99,10 +142,16 @@ void modifier_contact() {
         return;
     }
     
-    //ecrit le nom à supprimer
-    {printf(" ecrit le nom a modifier :")
+    debutmodi:
+    //ecrit le nom à modifier
+    {printf(" ecrit le nom a modifier :");
     fgets(nom_a_modifier, sizeof(nom_a_modifier), stdin);
     nom_a_modifier[strcspn(nom_a_modifier, "\n")] = '\0';}
+
+    //verifier le nom à supprimer
+    if (!nom_verifier(nom_a_modifier)){
+        goto debutmodi;
+    }
 
     // Rechercher le contact
     {int i;
@@ -142,10 +191,14 @@ void supprimer_contact() {
         return;
     }
     
+    debutsupp:
     //ecrit le nom à supprimer
     {printf(" ecrit le nom a supprimer :");
     fgets(nom_a_supprimer, sizeof(nom_a_supprimer), stdin);
     nom_a_supprimer[strcspn(nom_a_supprimer, "\n")] = '\0';}
+
+    //verifier le nom à supprimer
+    
 
     // Rechercher l'indice du contact à supprimer
     for (i = 0; i < nb_contacts; i++) {
@@ -182,6 +235,46 @@ void afficher_contacts() {
     printf("|   ID     |         Name         |   Phone Number  |              Email               |\n");
     printf("+----------+----------------------+-----------------+----------------------------------+\n");
     for (int i = 0; i < nb_contacts; i++) {
-        printf("| %8s | %-20s | %-17s | %-35s |\n",contacts[i].id,contacts[i].nom,contacts[i].numero,contacts[i].email);}}}
+        printf("| %s | %-20s | %-17s | %-35s |\n",contacts[i].id,contacts[i].nom,contacts[i].numero,contacts[i].email);}
+    printf("+----------+----------------------+-----------------+----------------------------------+\n");}}
+
+//5. Rechercher un Contact
+void rechercher_contact( ) {
+    char nom_a_rechercher[50];
+    int i;
+    int trouve = 0;
+
+    // Vérifier si le tableau contacts est nul
+    if (contacts == NULL) {
+        printf("Erreur : le tableau de contacts est null.\n");
+        return;
+    }
+
+    //ecrit le nom à rechercher
+    {printf(" ecrit le nom a rechercher :");
+    fgets(nom_a_rechercher, sizeof(nom_a_rechercher), stdin);
+    nom_a_rechercher[strcspn(nom_a_rechercher, "\n")] = '\0';}
+    
+    //rechercher sur le contact
+    for (i = 0; i < nb_contacts; i++) {
+        if (strcmp(contacts[i].nom, nom_a_chercher) == 0) {
+            printf("Contact trouvé :\n");
+            printf("ID : %s\n", contacts[i].id);
+            printf("Nom : %s\n", contacts[i].nom);
+            printf("Numéro : %s\n", contacts[i].numero);
+            printf("Email : %s\n", contacts[i].email);
+            trouve = 1;
+            break;
+        }
+    }
+    
+    //si le contact non trouvé
+    if (!trouve) {
+        printf("Contact non trouvé.\n");}
+}
+
+
+
+
 
 
